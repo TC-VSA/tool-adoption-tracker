@@ -4,408 +4,672 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Tool Adoption Issue Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:#F4DB84;min-height:100vh;padding:36px 20px 60px}
-.page{max-width:760px;margin:0 auto}
-
-/* ── HEADER ── */
-.hdr{margin-bottom:26px}
-.hdr h1{font-size:28px;font-weight:600;color:#423404;letter-spacing:-.4px}
-.hdr p{font-size:14px;color:#6b5209;margin-top:5px}
-.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:4px 12px;font-size:12px;color:#3B6D11;font-weight:500;margin-top:10px}
-.dot{width:7px;height:7px;background:#3B6D11;border-radius:50%;animation:blink 2s ease-in-out infinite}
+body{font-family:'Inter',sans-serif;background:#F4DB84;min-height:100vh;padding:28px 20px 60px}
+.page{max-width:1000px;margin:0 auto}
+.hdr{margin-bottom:20px}
+.hdr h1{font-size:26px;font-weight:600;color:#423404;letter-spacing:-.4px}
+.hdr p{font-size:13px;color:#6b5209;margin-top:4px}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:4px 12px;font-size:12px;color:#3B6D11;font-weight:500;margin-top:8px}
+.dot{width:7px;height:7px;background:#3B6D11;border-radius:50%;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* ── PROGRESS BAR ── */
-.progress-wrap{background:rgba(255,255,255,.4);border-radius:20px;height:6px;margin-bottom:20px;overflow:hidden}
-.progress-fill{height:6px;background:#423404;border-radius:20px;transition:width .4s ease;width:0%}
-.steps-label{display:flex;justify-content:space-between;font-size:11px;color:#6b5209;margin-bottom:6px;font-weight:500}
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .18s;background:rgba(255,255,255,.5);color:#6b5209}
+.tab.active{background:#423404;color:#F9C60E;box-shadow:0 2px 10px rgba(66,52,4,.25)}
+.tab:hover:not(.active){background:rgba(255,255,255,.75)}
 
-/* ── CARD ── */
-.card{background:#fff;border-radius:16px;padding:26px 28px;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.06);transition:box-shadow .2s}
-.card:hover{box-shadow:0 4px 24px rgba(0,0,0,.09)}
-.sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#bbb;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.mc{background:rgba(255,255,255,.7);border-radius:12px;padding:12px 16px;border:1px solid rgba(255,255,255,.9)}
+.mv{font-size:26px;font-weight:600;color:#423404;line-height:1}
+.ml{font-size:11px;color:#6b5209;margin-top:3px}
 
-/* ── GRID ── */
+/* CARDS */
+.card{background:#fff;border-radius:16px;padding:24px 26px;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#bbb;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #f0f0f0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
 .g1{margin-bottom:14px}
-
-/* ── FIELDS ── */
-.field{display:flex;flex-direction:column;gap:5px}
+.field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:12px;font-weight:500;color:#666}
 .req{color:#e24b4a}
-input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{
-  padding:10px 13px;border-radius:9px;border:1.5px solid #e8e8e8;
-  font-size:13px;font-family:'Inter',sans-serif;
-  background:#fafafa;color:#1a1a1a;width:100%;
-  outline:none;transition:all .18s
-}
-input:focus,select:focus,textarea:focus{
-  border-color:#F9C60E;background:#fff;
-  box-shadow:0 0 0 3px rgba(249,198,14,.2)
-}
+
+/* INPUTS */
+input[type=text],input[type=number],input[type=date],select,textarea{padding:9px 12px;border-radius:8px;border:1.5px solid #e8e8e8;font-size:13px;font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;width:100%;outline:none;transition:all .18s}
+input:focus,select:focus,textarea:focus{border-color:#F9C60E;background:#fff;box-shadow:0 0 0 3px rgba(249,198,14,.2)}
 input.err,select.err{border-color:#e24b4a!important;box-shadow:0 0 0 3px rgba(226,75,74,.12)!important}
-textarea{resize:vertical;min-height:76px;line-height:1.55}
-select{cursor:pointer}
+textarea{resize:vertical;min-height:70px;line-height:1.5}
 
-/* ── ADOPTION SLIDER ── */
+/* SLIDER */
 .slider-wrap{display:flex;align-items:center;gap:10px;margin-top:2px}
-.slider-wrap input[type=range]{
-  flex:1;-webkit-appearance:none;height:5px;background:#e8e8e8;
-  border-radius:5px;outline:none;cursor:pointer
-}
-.slider-wrap input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:18px;height:18px;
-  background:#F9C60E;border:2px solid #423404;border-radius:50%;cursor:pointer
-}
-.adopt-val{font-size:14px;font-weight:600;color:#423404;min-width:38px;text-align:right}
+.slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:5px;background:#e8e8e8;border-radius:5px;outline:none;cursor:pointer}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#F9C60E;border:2px solid #423404;border-radius:50%;cursor:pointer}
+.adopt-val{font-size:14px;font-weight:600;color:#423404;min-width:36px;text-align:right}
 
-/* ── QUICK FILL TAGS ── */
-.quick-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
-.qtag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;background:#f4f4f4;color:#555;border:1px solid #e8e8e8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+/* FILE UPLOAD */
+.file-label{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:1.5px dashed #e8e8e8;background:#fafafa;font-size:12px;font-weight:500;color:#666;cursor:pointer;transition:all .18s;width:100%}
+.file-label:hover{border-color:#F9C60E;background:#fff8e6;color:#423404}
+.file-label svg{width:14px;height:14px;flex-shrink:0}
+input[type=file]{display:none}
+.file-name{font-size:11px;color:#3B6D11;margin-top:4px;padding:4px 10px;background:#EAF3DE;border-radius:6px;display:none;align-items:center;gap:6px}
+.file-name span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.file-clear{background:none;border:none;color:#A32D2D;cursor:pointer;font-size:14px;padding:0;font-weight:600}
+
+/* QUICK TAGS */
+.quick-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.qtag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#f4f4f4;color:#555;border:1px solid #e8e8e8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
 .qtag:hover{background:#FAEEDA;color:#854F0B;border-color:#EF9F27}
 
-/* ── ERROR BANNER ── */
-.err-bar{background:#FCEBEB;border:1px solid #e24b4a;border-radius:9px;padding:11px 15px;font-size:13px;color:#A32D2D;margin-bottom:14px;display:none;font-weight:500}
+/* PROGRESS */
+.progress-wrap{background:rgba(255,255,255,.4);border-radius:20px;height:5px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:5px;background:#423404;border-radius:20px;transition:width .4s ease;width:0%}
+.steps-label{display:flex;justify-content:space-between;font-size:11px;color:#6b5209;margin-bottom:5px;font-weight:500}
 
-/* ── SUBMIT BUTTON ── */
-.submit-wrap{margin-top:6px}
-.submit-btn{
-  width:100%;padding:15px;background:#423404;color:#F9C60E;
-  border:none;border-radius:10px;font-size:15px;font-weight:600;
-  cursor:pointer;font-family:'Inter',sans-serif;
-  transition:all .18s;letter-spacing:.01em
-}
+/* BTNS */
+.err-bar{background:#FCEBEB;border:1px solid #e24b4a;border-radius:8px;padding:10px 14px;font-size:13px;color:#A32D2D;margin-bottom:14px;display:none;font-weight:500}
+.submit-btn{width:100%;padding:14px;background:#423404;color:#F9C60E;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;margin-top:6px}
 .submit-btn:hover:not(:disabled){background:#5a4606;transform:translateY(-1px);box-shadow:0 4px 16px rgba(66,52,4,.25)}
-.submit-btn:active:not(:disabled){transform:translateY(0)}
-.submit-btn:disabled{background:#ccc;color:#888;cursor:not-allowed;transform:none;box-shadow:none}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(249,198,14,.3);border-top-color:#F9C60E;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle}
+.submit-btn:disabled{background:#ccc;color:#888;cursor:not-allowed;transform:none}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(249,198,14,.3);border-top-color:#F9C60E;border-radius:50%;animation:sp .7s linear infinite;margin-right:7px;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* ── SUCCESS ── */
-.success-card{display:none;background:#fff;border-radius:16px;padding:52px 28px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.06)}
-.success-icon{width:72px;height:72px;background:#EAF3DE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
-.success-card h2{font-size:22px;font-weight:600;color:#3B6D11;margin-bottom:8px}
-.success-card p{font-size:14px;color:#777;line-height:1.65;margin-bottom:20px}
-.ref{display:inline-block;font-family:monospace;font-size:14px;font-weight:600;color:#423404;background:#F4DB84;padding:6px 16px;border-radius:8px;margin-bottom:24px}
-.reset-btn{background:#423404;color:#F9C60E;border:none;border-radius:9px;padding:11px 28px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s}
-.reset-btn:hover{background:#5a4606}
+/* SUCCESS */
+.success-card{display:none;background:#fff;border-radius:16px;padding:48px 26px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.si{width:68px;height:68px;background:#EAF3DE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
+.success-card h2{font-size:20px;font-weight:600;color:#3B6D11;margin-bottom:6px}
+.success-card p{font-size:13px;color:#777;line-height:1.6;margin-bottom:18px}
+.ref{display:inline-block;font-family:monospace;font-size:13px;font-weight:600;color:#423404;background:#F4DB84;padding:5px 14px;border-radius:7px;margin-bottom:20px}
+.new-btn{background:#423404;color:#F9C60E;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
 
-/* ── RESPONSIVE ── */
-@media(max-width:600px){
-  body{padding:20px 14px 40px}
-  .g2,.g3{grid-template-columns:1fr}
-  .card{padding:20px 18px}
-  .hdr h1{font-size:22px}
-}
+/* DATA TABLE */
+.data-toolbar{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+.search-inp{flex:2;min-width:0;padding:8px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.7);font-size:13px;font-family:'Inter',sans-serif;outline:none;color:#1a1a1a}
+.search-inp:focus{background:#fff;border-color:#F9C60E}
+.filter-sel{flex:1;min-width:0;padding:8px 10px;border-radius:8px;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.7);font-size:12px;font-family:'Inter',sans-serif;outline:none;color:#1a1a1a;cursor:pointer}
+.refresh-btn{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.7);font-size:12px;font-weight:500;color:#423404;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.refresh-btn:hover{background:#fff}
+.tbl-wrap{background:#fff;border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.06);overflow:hidden}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:880px}
+thead th{background:#F9C60E;color:#423404;font-weight:600;padding:10px 12px;text-align:left;font-size:11px;white-space:nowrap;border-bottom:2px solid #e8c800}
+tbody tr:nth-child(even){background:#fdfbf5}
+tbody tr:hover{background:#fff8e6}
+td{padding:9px 12px;border-bottom:1px solid #f2f2f2;vertical-align:middle;color:#1a1a1a}
+.mgrid{font-family:monospace;font-size:11px;color:#185FA5;font-weight:500}
+.dcell{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.p-low{background:#EAF3DE;color:#3B6D11}.p-medium{background:#FAEEDA;color:#854F0B}
+.p-high{background:#FCEBEB;color:#A32D2D}.p-critical{background:#501313;color:#F7C1C1}
+.p-new{background:#E6F1FB;color:#185FA5}.p-inprog{background:#FAEEDA;color:#854F0B}
+.p-resolved{background:#EAF3DE;color:#3B6D11}.p-def{background:#f4f4f4;color:#666}
+.abar{display:flex;align-items:center;gap:6px}
+.atrack{flex:1;background:#eee;border-radius:6px;height:5px;min-width:40px}
+.afill{height:5px;border-radius:6px;background:#F9C60E}
+.apct{font-size:10px;color:#888;min-width:24px}
+.rec-count{font-size:11px;color:#6b5209;margin-bottom:8px}
+.empty-state{text-align:center;padding:48px 20px;color:#aaa}
+.empty-state div{font-size:36px;margin-bottom:10px}
+.load-btn{padding:10px 20px;background:#423404;color:#F9C60E;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;margin-top:10px}
+.no-url-msg{background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:14px 16px;font-size:13px;color:#633806;margin-bottom:14px;line-height:1.6;display:none}
+
+/* ── BULK UPLOAD ── */
+.bulk-drop{border:2px dashed #c8a800;border-radius:14px;padding:36px 20px;text-align:center;background:rgba(255,255,255,.5);cursor:pointer;transition:all .2s;margin-bottom:16px}
+.bulk-drop:hover,.bulk-drop.drag-over{background:rgba(255,255,255,.85);border-color:#423404}
+.bulk-drop-icon{font-size:36px;margin-bottom:10px}
+.bulk-drop h3{font-size:15px;font-weight:500;color:#423404;margin-bottom:5px}
+.bulk-drop p{font-size:12px;color:#6b5209}
+.bulk-drop .hint{font-size:11px;color:#aaa;margin-top:8px}
+.bulk-actions{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.bulk-info{font-size:13px;color:#423404;font-weight:500;flex:1}
+.btn-upload-all{padding:10px 22px;background:#423404;color:#F9C60E;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-upload-all:hover:not(:disabled){background:#5a4606}
+.btn-upload-all:disabled{background:#ccc;color:#888;cursor:not-allowed}
+.btn-reset-bulk{padding:10px 16px;background:rgba(255,255,255,.7);color:#A32D2D;border:1px solid #f0b0b0;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-reset-bulk:hover{background:#FCEBEB}
+.btn-dl-template{padding:10px 16px;background:rgba(255,255,255,.7);color:#185FA5;border:1px solid #b5d4f4;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-dl-template:hover{background:#E6F1FB}
+.bulk-preview{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06);margin-bottom:14px}
+.bulk-preview table{min-width:700px}
+.bulk-preview thead th{background:#F9C60E;color:#423404;font-weight:600;padding:8px 12px;font-size:11px;white-space:nowrap;border-bottom:2px solid #e8c800}
+.bulk-preview tbody tr:nth-child(even){background:#fdfbf5}
+.bulk-preview td{padding:7px 12px;border-bottom:1px solid #f2f2f2;font-size:12px;color:#1a1a1a;vertical-align:middle}
+.row-status{display:inline-block;width:18px;height:18px;border-radius:50%;font-size:10px;text-align:center;line-height:18px;font-weight:700;flex-shrink:0}
+.rs-pending{background:#e8e8e8;color:#666}
+.rs-ok{background:#EAF3DE;color:#3B6D11}
+.rs-err{background:#FCEBEB;color:#A32D2D}
+.rs-loading{background:#E6F1FB;color:#185FA5;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.progress-bar-bulk{background:#e8e8e8;border-radius:20px;height:8px;margin-top:6px;overflow:hidden}
+.progress-bar-bulk-fill{height:8px;background:#3B6D11;border-radius:20px;transition:width .3s}
+.bulk-result{background:#EAF3DE;border:1px solid #639922;border-radius:10px;padding:14px 18px;margin-bottom:14px;display:none}
+.bulk-result h3{font-size:14px;font-weight:600;color:#3B6D11;margin-bottom:4px}
+.bulk-result p{font-size:13px;color:#3B6D11}
+.bulk-result.has-errors{background:#FAEEDA;border-color:#EF9F27}
+.bulk-result.has-errors h3{color:#854F0B}
+.bulk-result.has-errors p{color:#854F0B}
+
+@media(max-width:600px){body{padding:16px 12px 40px}.g2,.g3{grid-template-columns:1fr}.card{padding:18px 16px}.hdr h1{font-size:20px}.metrics{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- HEADER -->
   <div class="hdr">
     <h1>Tool adoption issue tracker</h1>
-    <p>Fill the form below — your entry saves directly to SharePoint Excel.</p>
-    <div class="live-badge">
-      <span class="dot"></span>
-      Live · Powered by Microsoft 365
-    </div>
+    <p>Submit issues and view all records — data saves directly to SharePoint Excel.</p>
+    <div class="live-badge"><span class="dot"></span>Live · Powered by Microsoft 365</div>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="steps-label">
-    <span id="step-label">Manager details</span>
-    <span id="step-count">Step 1 of 3</span>
+  <div class="tabs">
+    <button class="tab active" id="tab-form"   onclick="showTab('form')">+ Submit issue</button>
+    <button class="tab"        id="tab-bulk"   onclick="showTab('bulk')">⬆ Bulk upload</button>
+    <button class="tab"        id="tab-data"   onclick="showTab('data')">View all records</button>
   </div>
-  <div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
 
-  <!-- ERROR BANNER -->
-  <div class="err-bar" id="err-bar"></div>
-
-  <!-- ══ FORM ══ -->
-  <div id="form-wrap">
-
-    <!-- SECTION 1 — Manager & Team -->
-    <div class="card">
-      <div class="sec-title">1 · Manager &amp; team details</div>
-      <div class="g3">
-        <div class="field">
-          <label>Manager ID <span class="req">*</span></label>
-          <input type="text" id="f-mgrid" placeholder="e.g. MGR001" oninput="calcProgress()"/>
+  <!-- ══════════════ FORM TAB ══════════════ -->
+  <div id="pane-form">
+    <div class="steps-label"><span id="step-label">Manager details</span><span id="step-count">Step 1 of 3</span></div>
+    <div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
+    <div class="err-bar" id="err-bar"></div>
+    <div id="form-wrap">
+      <div class="card">
+        <div class="sec-title">1 · Manager &amp; team details</div>
+        <div class="g3">
+          <div class="field"><label>Manager ID <span class="req">*</span></label><input type="text" id="f-mgrid" placeholder="e.g. MGR001" oninput="calcProgress()"/></div>
+          <div class="field"><label>Manager name <span class="req">*</span></label><input type="text" id="f-mgrname" placeholder="Full name" oninput="calcProgress()"/></div>
+          <div class="field"><label>Department <span class="req">*</span></label>
+            <select id="f-dept" onchange="calcProgress()">
+              <option value="">Select department</option>
+              <option>Sales</option><option>Marketing</option><option>Engineering</option>
+              <option>HR</option><option>Finance</option><option>Operations</option>
+              <option>Customer Success</option><option>Legal</option><option>Other</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label>Manager name <span class="req">*</span></label>
-          <input type="text" id="f-mgrname" placeholder="Full name" oninput="calcProgress()"/>
-        </div>
-        <div class="field">
-          <label>Department <span class="req">*</span></label>
-          <select id="f-dept" onchange="calcProgress()">
-            <option value="">Select department</option>
-            <option>Sales</option>
-            <option>Marketing</option>
-            <option>Engineering</option>
-            <option>HR</option>
-            <option>Finance</option>
-            <option>Operations</option>
-            <option>Customer Success</option>
-            <option>Legal</option>
-            <option>Other</option>
-          </select>
-        </div>
-      </div>
-      <div class="g3">
-        <div class="field">
-          <label>Team size</label>
-          <input type="number" id="f-size" placeholder="e.g. 12" min="1"/>
-        </div>
-        <div class="field">
-          <label>Interaction date</label>
-          <input type="date" id="f-date"/>
-        </div>
-        <div class="field">
-          <label>Current adoption %</label>
-          <div class="slider-wrap">
-            <input type="range" id="f-adopt" min="0" max="100" value="0"
-              oninput="document.getElementById('adv').textContent=this.value+'%'"/>
-            <span class="adopt-val" id="adv">0%</span>
+        <div class="g3">
+          <div class="field"><label>Team size</label><input type="number" id="f-size" placeholder="e.g. 12" min="1"/></div>
+          <div class="field"><label>Interaction date</label><input type="date" id="f-date"/></div>
+          <div class="field"><label>Current adoption %</label>
+            <div class="slider-wrap">
+              <input type="range" id="f-adopt" min="0" max="100" value="0" oninput="document.getElementById('adv').textContent=this.value+'%'"/>
+              <span class="adopt-val" id="adv">0%</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- SECTION 2 — Issue -->
-    <div class="card">
-      <div class="sec-title">2 · Issue details</div>
-      <div class="g2">
-        <div class="field">
-          <label>Primary issue category <span class="req">*</span></label>
-          <select id="f-cat" onchange="calcProgress()">
-            <option value="">Select category</option>
-            <option>Login / Access</option>
-            <option>Performance</option>
-            <option>Training Gap</option>
-            <option>Integration</option>
-            <option>UI/UX Confusion</option>
-            <option>Data Migration</option>
-            <option>Resistance to Change</option>
-            <option>Licensing</option>
-            <option>Other</option>
-          </select>
+      <div class="card">
+        <div class="sec-title">2 · Issue details</div>
+        <div class="g2">
+          <div class="field"><label>Primary issue category <span class="req">*</span></label>
+            <select id="f-cat" onchange="calcProgress()">
+              <option value="">Select category</option>
+              <option>Login / Access</option><option>Performance</option><option>Training Gap</option>
+              <option>Integration</option><option>UI/UX Confusion</option><option>Data Migration</option>
+              <option>Resistance to Change</option><option>Licensing</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label>Risk level</label>
+            <select id="f-risk"><option value="">Select risk</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+          </div>
+        </div>
+        <div class="g1 field">
+          <label>Detailed issue description</label>
+          <textarea id="f-desc" placeholder="Describe what happens, who is affected, when it started..."></textarea>
+          <div class="quick-tags">
+            <span class="qtag" onclick="appendDesc('Team unable to login after system update.')">Login after update</span>
+            <span class="qtag" onclick="appendDesc('Team is not aware of key features — training needed.')">Training needed</span>
+            <span class="qtag" onclick="appendDesc('System is too slow — impacting daily productivity.')">Performance issue</span>
+            <span class="qtag" onclick="appendDesc('Team is resistant to switching from the old tool.')">Resistance to change</span>
+          </div>
         </div>
         <div class="field">
-          <label>Risk level</label>
-          <select id="f-risk">
-            <option value="">Select risk</option>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-            <option>Critical</option>
-          </select>
+          <label>Attach document <span style="color:#aaa;font-weight:400">(optional · max 5MB)</span></label>
+          <label class="file-label" for="f-file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="file-label-text">Click to upload (PDF, PNG, JPG, DOCX)</span>
+          </label>
+          <input type="file" id="f-file" accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.doc" onchange="handleFile(this)"/>
+          <div class="file-name" id="file-name-row"><span id="file-name-text"></span><button class="file-clear" onclick="clearFile()">×</button></div>
         </div>
       </div>
-      <div class="g1 field">
-        <label>Detailed issue description</label>
-        <textarea id="f-desc" placeholder="Describe what happens, who is affected, when it started..."></textarea>
-        <div class="quick-tags">
-          <span class="qtag" onclick="appendDesc('Team unable to login after system update.')">Login after update</span>
-          <span class="qtag" onclick="appendDesc('Team is not aware of key features — training needed.')">Training needed</span>
-          <span class="qtag" onclick="appendDesc('System is too slow — impacting daily productivity.')">Performance issue</span>
-          <span class="qtag" onclick="appendDesc('Team is resistant to switching from the old tool.')">Resistance to change</span>
+      <div class="card">
+        <div class="sec-title">3 · Resolution &amp; support</div>
+        <div class="g2">
+          <div class="field"><label>Agreed way forward</label><textarea id="f-way" style="min-height:56px" placeholder="Steps agreed to resolve this..."></textarea></div>
+          <div class="field"><label>Support required from TCMPL</label><textarea id="f-sup" style="min-height:56px" placeholder="What does TCMPL need to provide?"></textarea></div>
         </div>
-      </div>
-    </div>
-
-    <!-- SECTION 3 — Resolution -->
-    <div class="card">
-      <div class="sec-title">3 · Resolution &amp; support</div>
-      <div class="g2">
-        <div class="field">
-          <label>Agreed way forward</label>
-          <textarea id="f-way" style="min-height:60px" placeholder="Steps agreed to resolve this..."></textarea>
+        <div class="g3">
+          <div class="field"><label>Timeline for 100% compliance</label><input type="date" id="f-timeline"/></div>
+          <div class="field"><label>Status <span class="req">*</span></label>
+            <select id="f-status"><option>New</option><option>In Review</option><option>Escalated to Vendor</option><option>In Progress</option><option>Waiting on Team</option><option>Resolved</option><option>Won't Fix</option></select>
+          </div>
+          <div class="field"><label>Remarks</label><input type="text" id="f-remarks" placeholder="Any notes..."/></div>
         </div>
-        <div class="field">
-          <label>Support required from TCMPL</label>
-          <textarea id="f-sup" style="min-height:60px" placeholder="What does TCMPL need to provide?"></textarea>
-        </div>
-      </div>
-      <div class="g3">
-        <div class="field">
-          <label>Timeline for 100% compliance</label>
-          <input type="date" id="f-timeline"/>
-        </div>
-        <div class="field">
-          <label>Status <span class="req">*</span></label>
-          <select id="f-status" onchange="calcProgress()">
-            <option>New</option>
-            <option>In Review</option>
-            <option>Escalated to Vendor</option>
-            <option>In Progress</option>
-            <option>Waiting on Team</option>
-            <option>Resolved</option>
-            <option>Won't Fix</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Remarks</label>
-          <input type="text" id="f-remarks" placeholder="Any additional notes..."/>
-        </div>
-      </div>
-
-      <div class="submit-wrap">
-        <button class="submit-btn" id="sub-btn" onclick="submitForm()">
-          Submit issue to SharePoint
-        </button>
+        <button class="submit-btn" id="sub-btn" onclick="submitForm()">Submit issue to SharePoint</button>
       </div>
     </div>
-
-  </div><!-- /form-wrap -->
-
-  <!-- ══ SUCCESS ══ -->
-  <div class="success-card" id="success-wrap">
-    <div class="success-icon">✓</div>
-    <h2>Issue logged successfully!</h2>
-    <p>Your entry has been saved directly to the<br/>SharePoint Excel database.</p>
-    <div class="ref" id="ref-id"></div>
-    <br/>
-    <button class="reset-btn" onclick="resetForm()">Submit another issue</button>
+    <div class="success-card" id="success-wrap">
+      <div class="si">✓</div>
+      <h2>Issue logged successfully!</h2>
+      <p>Your entry has been saved to the SharePoint Excel database.</p>
+      <div class="ref" id="ref-id"></div><br/>
+      <button class="new-btn" onclick="resetForm()">Submit another issue</button>
+    </div>
   </div>
 
-</div><!-- /page -->
+  <!-- ══════════════ BULK UPLOAD TAB ══════════════ -->
+  <div id="pane-bulk" style="display:none">
+
+    <div class="card">
+      <div class="sec-title">Bulk upload — upload Excel or CSV with multiple records</div>
+
+      <!-- Drop zone -->
+      <div class="bulk-drop" id="bulk-drop"
+        onclick="g('bulk-file').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleBulkDrop(event)">
+        <div class="bulk-drop-icon">📂</div>
+        <h3>Click to upload or drag &amp; drop</h3>
+        <p>Supports Excel (.xlsx, .xls) and CSV (.csv)</p>
+        <div class="hint">First row must be column headers · Max 500 rows per upload</div>
+      </div>
+      <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" onchange="handleBulkFile(this)"/>
+
+      <!-- Download template button -->
+      <button class="btn-dl-template" onclick="downloadTemplate()">⬇ Download Excel template</button>
+    </div>
+
+    <!-- Preview area -->
+    <div id="bulk-preview-area" style="display:none">
+
+      <div class="bulk-result" id="bulk-result"></div>
+
+      <div class="bulk-actions">
+        <div class="bulk-info" id="bulk-info"></div>
+        <button class="btn-dl-template" onclick="downloadTemplate()">⬇ Template</button>
+        <button class="btn-reset-bulk" onclick="resetBulk()">✕ Clear</button>
+        <button class="btn-upload-all" id="bulk-submit-btn" onclick="submitAllRows()">⬆ Upload all to SharePoint</button>
+      </div>
+
+      <!-- Progress bar (shown during upload) -->
+      <div id="bulk-progress-wrap" style="display:none;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#6b5209;margin-bottom:4px">
+          <span id="bulk-prog-label">Uploading...</span>
+          <span id="bulk-prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bulk"><div class="progress-bar-bulk-fill" id="bulk-prog-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Preview table -->
+      <div class="bulk-preview">
+        <div class="tbl-scroll">
+          <table id="bulk-table">
+            <thead id="bulk-thead"></thead>
+            <tbody id="bulk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ DATA TAB ══════════════ -->
+  <div id="pane-data" style="display:none">
+    <div class="metrics">
+      <div class="mc"><div class="mv" id="m-total">—</div><div class="ml">Total issues</div></div>
+      <div class="mc"><div class="mv" id="m-open" style="color:#A32D2D">—</div><div class="ml">Open issues</div></div>
+      <div class="mc"><div class="mv" id="m-high">—</div><div class="ml">High / critical</div></div>
+      <div class="mc"><div class="mv" id="m-adopt">—</div><div class="ml">Avg. adoption %</div></div>
+    </div>
+    <div class="no-url-msg" id="no-url-msg"></div>
+    <div class="data-toolbar">
+      <input class="search-inp" type="text" id="srch" placeholder="Search manager, dept, issue..." oninput="renderTable()"/>
+      <select class="filter-sel" id="fil-status" onchange="renderTable()">
+        <option value="">All statuses</option>
+        <option>New</option><option>In Review</option><option>Escalated to Vendor</option>
+        <option>In Progress</option><option>Waiting on Team</option><option>Resolved</option><option>Won't Fix</option>
+      </select>
+      <select class="filter-sel" id="fil-risk" onchange="renderTable()">
+        <option value="">All risk levels</option>
+        <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+      </select>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    </div>
+    <div class="rec-count" id="rec-count"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Manager ID</th><th>Manager Name</th><th>Department</th>
+            <th>Issue Category</th><th>Description</th><th>Risk</th>
+            <th>Adoption %</th><th>Status</th><th>Timeline</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="empty-st">
+        <div>📋</div>
+        <p id="empty-msg">Click Refresh to load data from SharePoint</p>
+        <button class="load-btn" onclick="loadData()">Load data</button>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <script>
-// ════════════════════════════════════════════════════════
-//  PASTE YOUR POWER AUTOMATE HTTP TRIGGER URL BELOW
-//  How to get it:
-//  1. Go to flow.microsoft.com
-//  2. Open your flow → "When an HTTP request is received"
-//  3. Copy the "HTTP POST URL"
-//  4. Replace the placeholder text below with that URL
-// ════════════════════════════════════════════════════════
-const FLOW_URL = "https://defaultb992331348d546f4b29467fd4b2d25.1b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c3c9d232553f4bcc96d5b8381443d11f/triggers/manual/paths/invoke?api-version=1";
-// ════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+const SUBMIT_URL =  "https://defaultb992331348d546f4b29467fd4b2d25.1b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c3c9d232553f4bcc96d5b8381443d11f/triggers/manual/paths/invoke?api-version=1"  //"YOUR_POWER_AUTOMATE_SUBMIT_URL_HERE";
+const DATA_URL   = "YOUR_POWER_AUTOMATE_DATA_URL_HERE";
+// ═══════════════════════════════════════════════════════
+
+const COLUMNS = [
+  "Manager ID","Manager Name","Department","Team Size","Interaction Date",
+  "Primary Issue Category","Detailed Issue Description","Agreed Way Forward",
+  "Support Required from TCMPL","Agreed Timeline for 100% Compliance",
+  "Current Adoption %","Risk Level","Status","Remarks"
+];
 
 const g  = id => document.getElementById(id);
-const gv = id => (g(id).value || "").trim();
+const gv = id => (g(id).value||"").trim();
+let allRecords=[], fileBase64="", fileName="";
+let bulkRows=[], bulkRowStatus=[];
 
-// ── Progress bar ──────────────────────────────────────
-function calcProgress() {
-  const fields = ["f-mgrid","f-mgrname","f-dept","f-cat"];
-  const filled = fields.filter(id => gv(id) !== "").length;
-  const pct = Math.round((filled / fields.length) * 100);
-  g("prog").style.width = pct + "%";
-  const labels = ["Manager details","Issue details","Resolution"];
-  const idx = filled < 3 ? 0 : filled < 4 ? 1 : 2;
-  g("step-label").textContent = labels[idx];
-  g("step-count").textContent = "Step " + (idx+1) + " of 3";
+// ── TABS ───────────────────────────────────────────────
+function showTab(tab){
+  ["form","bulk","data"].forEach(t=>{
+    g("pane-"+t).style.display = t===tab?"block":"none";
+    g("tab-"+t).classList.toggle("active",t===tab);
+  });
+  if(tab==="data") loadData();
 }
 
-// ── Quick fill description ────────────────────────────
-function appendDesc(text) {
-  const el = g("f-desc");
-  el.value = el.value ? el.value + " " + text : text;
-  el.focus();
+// ── PROGRESS ───────────────────────────────────────────
+function calcProgress(){
+  const filled=["f-mgrid","f-mgrname","f-dept","f-cat"].filter(id=>gv(id)!=="").length;
+  g("prog").style.width=Math.round((filled/4)*100)+"%";
+  const labels=["Manager details","Issue details","Resolution"];
+  const idx=filled<2?0:filled<4?1:2;
+  g("step-label").textContent=labels[idx];
+  g("step-count").textContent="Step "+(idx+1)+" of 3";
 }
 
-// ── Generate reference ID ─────────────────────────────
-function genRef() {
-  const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let r = "TAI-";
-  for (let i=0;i<6;i++) r += c[Math.floor(Math.random()*c.length)];
-  return r;
+function appendDesc(t){const el=g("f-desc");el.value=el.value?el.value+" "+t:t;el.focus();}
+
+// ── FILE ATTACH ────────────────────────────────────────
+function handleFile(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){showErr("⚠ File too large. Max 5MB.");input.value="";return;}
+  fileName=file.name;
+  const r=new FileReader();
+  r.onload=e=>{fileBase64=e.target.result.split(",")[1];g("file-name-text").textContent=fileName;g("file-name-row").style.display="flex";g("file-label-text").textContent="File selected — click to change";};
+  r.readAsDataURL(file);
+}
+function clearFile(){fileBase64="";fileName="";g("f-file").value="";g("file-name-row").style.display="none";g("file-label-text").textContent="Click to upload (PDF, PNG, JPG, DOCX)";}
+
+// ── HELPERS ────────────────────────────────────────────
+function genRef(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let r="TAI-";for(let i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function showErr(msg){const b=g("err-bar");b.textContent=msg;b.style.display="block";b.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>b.style.display="none",6000);}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+// ── SUBMIT SINGLE ──────────────────────────────────────
+async function submitForm(){
+  ["f-mgrid","f-mgrname","f-dept","f-cat"].forEach(id=>g(id).classList.remove("err"));
+  let ok=true;
+  ["f-mgrid","f-mgrname","f-dept","f-cat"].forEach(id=>{if(!gv(id)){g(id).classList.add("err");ok=false;}});
+  if(!ok){showErr("⚠ Please fill all required fields marked with *");return;}
+  if(SUBMIT_URL==="YOUR_POWER_AUTOMATE_SUBMIT_URL_HERE"){showErr("⚠ Power Automate URL not configured yet.");return;}
+  const btn=g("sub-btn");btn.disabled=true;btn.innerHTML='<span class="spin"></span>Saving to SharePoint...';
+  const payload={"Manager ID":gv("f-mgrid"),"Manager Name":gv("f-mgrname"),"Department":gv("f-dept"),"Team Size":gv("f-size"),"Interaction Date":gv("f-date"),"Primary Issue Category":gv("f-cat"),"Detailed Issue Description":gv("f-desc"),"Agreed Way Forward":gv("f-way"),"Support Required from TCMPL":gv("f-sup"),"Agreed Timeline for 100% Compliance":gv("f-timeline"),"Current Adoption %":g("f-adopt").value,"Risk Level":gv("f-risk"),"Status":gv("f-status"),"Remarks":gv("f-remarks"),"Submitted At":new Date().toISOString(),"Attachment Name":fileName,"Attachment Base64":fileBase64};
+  try{
+    const res=await fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    if(res.ok||res.status===202){g("ref-id").textContent="Reference ID: "+genRef();g("form-wrap").style.display="none";g("success-wrap").style.display="block";g("prog").style.width="100%";window.scrollTo({top:0,behavior:"smooth"});}
+    else{throw new Error("Status "+res.status);}
+  }catch(e){showErr("❌ Submission failed: "+e.message);btn.disabled=false;btn.textContent="Submit issue to SharePoint";}
 }
 
-// ── Show error ────────────────────────────────────────
-function showErr(msg) {
-  const b = g("err-bar");
-  b.textContent = msg; b.style.display = "block";
-  b.scrollIntoView({ behavior:"smooth", block:"center" });
-  setTimeout(() => b.style.display = "none", 6000);
+function resetForm(){
+  ["f-mgrid","f-mgrname","f-size","f-desc","f-way","f-sup","f-remarks","f-timeline"].forEach(id=>g(id).value="");
+  ["f-dept","f-cat","f-risk"].forEach(id=>g(id).value="");
+  g("f-date").value=new Date().toISOString().split("T")[0];
+  g("f-adopt").value="0";g("adv").textContent="0%";g("f-status").value="New";clearFile();
+  g("sub-btn").disabled=false;g("sub-btn").textContent="Submit issue to SharePoint";
+  g("form-wrap").style.display="block";g("success-wrap").style.display="none";
+  calcProgress();window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// ── Submit ────────────────────────────────────────────
-async function submitForm() {
-  // Clear errors
-  ["f-mgrid","f-mgrname","f-dept","f-cat"].forEach(id => g(id).classList.remove("err"));
+// ══════════════════════════════════════════════════════
+// ── BULK UPLOAD ────────────────────────────────────────
+// ══════════════════════════════════════════════════════
 
-  // Validate
-  const req = ["f-mgrid","f-mgrname","f-dept","f-cat"];
-  let ok = true;
-  req.forEach(id => { if (!gv(id)) { g(id).classList.add("err"); ok = false; } });
-  if (!ok) { showErr("⚠ Please fill all required fields marked with *"); return; }
+function handleBulkDrop(e){
+  e.preventDefault();g("bulk-drop").classList.remove("drag-over");
+  const file=e.dataTransfer.files[0];
+  if(file) parseBulkFile(file);
+}
 
-  if (FLOW_URL === "https://defaultb992331348d546f4b29467fd4b2d25.1b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c3c9d232553f4bcc96d5b8381443d11f/triggers/manual/paths/invoke?api-version=1") {
-    showErr("⚠ Setup needed: paste your Power Automate URL in the script section of this file.");
-    return;
-  }
+function handleBulkFile(input){
+  const file=input.files[0];if(file) parseBulkFile(file);
+}
 
-  const btn = g("sub-btn");
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span>Saving to SharePoint...';
+function parseBulkFile(file){
+  const ext=file.name.split(".").pop().toLowerCase();
+  const reader=new FileReader();
 
-  const payload = {
-    "Manager ID":                           gv("f-mgrid"),
-    "Manager Name":                         gv("f-mgrname"),
-    "Department":                           gv("f-dept"),
-    "Team Size":                            gv("f-size"),
-    "Interaction Date":                     gv("f-date"),
-    "Primary Issue Category":               gv("f-cat"),
-    "Detailed Issue Description":           gv("f-desc"),
-    "Agreed Way Forward":                   gv("f-way"),
-    "Support Required from TCMPL":          gv("f-sup"),
-    "Agreed Timeline for 100% Compliance":  gv("f-timeline"),
-    "Current Adoption %":                   g("f-adopt").value,
-    "Risk Level":                           gv("f-risk"),
-    "Status":                               gv("f-status"),
-    "Remarks":                              gv("f-remarks"),
-    "Submitted At":                         new Date().toISOString()
+  reader.onload=e=>{
+    let rows=[];
+    try{
+      if(ext==="csv"){
+        rows=parseCSV(e.target.result);
+      } else {
+        const wb=XLSX.read(e.target.result,{type:"binary",cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{defval:"",raw:false});
+      }
+    }catch(err){
+      alert("Could not read file: "+err.message);return;
+    }
+
+    if(rows.length===0){alert("File is empty or could not be parsed.");return;}
+    if(rows.length>500){alert("Too many rows. Maximum 500 rows per upload.");return;}
+
+    bulkRows=rows;
+    bulkRowStatus=rows.map(()=>"pending");
+    renderBulkPreview();
+    g("bulk-preview-area").style.display="block";
+    g("bulk-drop").style.display="none";
+    g("bulk-result").style.display="none";
   };
 
-  try {
-    const res = await fetch(FLOW_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  if(ext==="csv") reader.readAsText(file);
+  else reader.readAsBinaryString(file);
+}
 
-    if (res.ok || res.status === 202) {
-      g("ref-id").textContent = "Reference ID: " + genRef();
-      g("form-wrap").style.display  = "none";
-      g("success-wrap").style.display = "block";
-      g("prog").style.width = "100%";
-      window.scrollTo({ top:0, behavior:"smooth" });
-    } else {
-      throw new Error("Status " + res.status);
-    }
-  } catch(e) {
-    showErr("❌ Submission failed: " + e.message + ". Please try again or contact your admin.");
-    btn.disabled = false;
-    btn.textContent = "Submit issue to SharePoint";
+function parseCSV(text){
+  const lines=text.trim().split("\n");
+  if(lines.length<2) return [];
+  const headers=lines[0].split(",").map(h=>h.trim().replace(/^"|"$/g,""));
+  return lines.slice(1).map(line=>{
+    const vals=line.split(",").map(v=>v.trim().replace(/^"|"$/g,""));
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=vals[i]||"");
+    return obj;
+  });
+}
+
+function renderBulkPreview(){
+  if(!bulkRows.length) return;
+  const keys=Object.keys(bulkRows[0]);
+
+  // Header
+  g("bulk-thead").innerHTML=`<tr><th style="width:32px">St.</th>${keys.map(k=>`<th>${esc(k)}</th>`).join("")}</tr>`;
+
+  // Rows
+  g("bulk-tbody").innerHTML=bulkRows.map((row,i)=>{
+    const st=bulkRowStatus[i];
+    const icon=st==="ok"?"✓":st==="err"?"✕":st==="loading"?"…":"•";
+    const cls=`rs-${st}`;
+    return`<tr id="bulk-row-${i}">
+      <td><span class="row-status ${cls}" id="brs-${i}">${icon}</span></td>
+      ${keys.map(k=>`<td class="dcell" title="${esc(row[k])}">${esc(row[k])}</td>`).join("")}
+    </tr>`;
+  }).join("");
+
+  const ok=bulkRows.length;
+  g("bulk-info").textContent=`${ok} row${ok!==1?"s":""} ready to upload`;
+}
+
+function updateRowStatus(i,status){
+  bulkRowStatus[i]=status;
+  const el=g("brs-"+i);
+  if(!el) return;
+  el.className="row-status rs-"+status;
+  el.textContent=status==="ok"?"✓":status==="err"?"✕":status==="loading"?"…":"•";
+  const row=g("bulk-row-"+i);
+  if(row){
+    row.style.background=status==="ok"?"#f0faf0":status==="err"?"#fff5f5":"";
   }
 }
 
-// ── Reset ─────────────────────────────────────────────
-function resetForm() {
-  ["f-mgrid","f-mgrname","f-size","f-desc","f-way","f-sup","f-remarks","f-timeline"]
-    .forEach(id => g(id).value = "");
-  ["f-dept","f-cat","f-risk"].forEach(id => g(id).value = "");
-  g("f-date").value    = new Date().toISOString().split("T")[0];
-  g("f-adopt").value   = "0";
-  g("adv").textContent = "0%";
-  g("f-status").value  = "New";
-  g("sub-btn").disabled = false;
-  g("sub-btn").textContent = "Submit issue to SharePoint";
-  g("form-wrap").style.display  = "block";
-  g("success-wrap").style.display = "none";
-  calcProgress();
-  window.scrollTo({ top:0, behavior:"smooth" });
+async function submitAllRows(){
+  if(SUBMIT_URL==="YOUR_POWER_AUTOMATE_SUBMIT_URL_HERE"){
+    alert("⚠ Power Automate URL not configured. Open index.html and paste your SUBMIT_URL.");return;
+  }
+  if(!bulkRows.length) return;
+
+  const btn=g("bulk-submit-btn");
+  btn.disabled=true;btn.textContent="Uploading...";
+  g("bulk-progress-wrap").style.display="block";
+  g("bulk-result").style.display="none";
+
+  let success=0,failed=0;
+
+  for(let i=0;i<bulkRows.length;i++){
+    updateRowStatus(i,"loading");
+    g("bulk-prog-label").textContent=`Uploading row ${i+1} of ${bulkRows.length}...`;
+    const pct=Math.round(((i)/bulkRows.length)*100);
+    g("bulk-prog-fill").style.width=pct+"%";
+    g("bulk-prog-pct").textContent=pct+"%";
+
+    // Map row keys to expected field names (flexible — matches any column name)
+    const r=bulkRows[i];
+    const payload={
+      "Manager ID":        r["Manager ID"]||r["ManagerID"]||r["manager_id"]||"",
+      "Manager Name":      r["Manager Name"]||r["ManagerName"]||r["manager_name"]||"",
+      "Department":        r["Department"]||r["department"]||"",
+      "Team Size":         r["Team Size"]||r["TeamSize"]||r["team_size"]||"",
+      "Interaction Date":  r["Interaction Date"]||r["InteractionDate"]||r["interaction_date"]||"",
+      "Primary Issue Category":        r["Primary Issue Category"]||r["PrimaryIssueCategory"]||r["issue_category"]||"",
+      "Detailed Issue Description":    r["Detailed Issue Description"]||r["DetailedIssueDescription"]||r["description"]||"",
+      "Agreed Way Forward":            r["Agreed Way Forward"]||r["AgreedWayForward"]||r["way_forward"]||"",
+      "Support Required from TCMPL":   r["Support Required from TCMPL"]||r["SupportRequired"]||r["support"]||"",
+      "Agreed Timeline for 100% Compliance": r["Agreed Timeline for 100% Compliance"]||r["AgreedTimeline"]||r["timeline"]||"",
+      "Current Adoption %":  r["Current Adoption %"]||r["CurrentAdoption"]||r["adoption"]||"",
+      "Risk Level":          r["Risk Level"]||r["RiskLevel"]||r["risk_level"]||"",
+      "Status":              r["Status"]||r["status"]||"New",
+      "Remarks":             r["Remarks"]||r["remarks"]||"",
+      "Submitted At":        new Date().toISOString()
+    };
+
+    try{
+      const res=await fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(res.ok||res.status===202){updateRowStatus(i,"ok");success++;}
+      else{throw new Error("Status "+res.status);}
+    }catch(err){
+      updateRowStatus(i,"err");failed++;
+    }
+
+    // Small delay to avoid rate limiting
+    await new Promise(r=>setTimeout(r,300));
+  }
+
+  // Final
+  g("bulk-prog-fill").style.width="100%";g("bulk-prog-pct").textContent="100%";
+  g("bulk-prog-label").textContent="Done!";
+  btn.disabled=false;btn.textContent="⬆ Upload all to SharePoint";
+
+  const res=g("bulk-result");
+  res.style.display="block";
+  if(failed===0){
+    res.className="bulk-result";
+    res.innerHTML=`<h3>✓ All ${success} records uploaded successfully!</h3><p>All rows have been saved to your SharePoint Excel database.</p>`;
+  } else {
+    res.className="bulk-result has-errors";
+    res.innerHTML=`<h3>⚠ Upload complete with ${failed} error${failed!==1?"s":""}</h3><p>${success} rows saved successfully. ${failed} rows failed (shown in red). Try re-uploading just the failed rows.</p>`;
+  }
+  g("bulk-info").textContent=`${success} uploaded · ${failed} failed`;
+}
+
+function resetBulk(){
+  bulkRows=[];bulkRowStatus=[];
+  g("bulk-file").value="";
+  g("bulk-preview-area").style.display="none";
+  g("bulk-drop").style.display="block";
+  g("bulk-result").style.display="none";
+  g("bulk-progress-wrap").style.display="none";
+  g("bulk-thead").innerHTML="";g("bulk-tbody").innerHTML="";
+}
+
+// ── DOWNLOAD TEMPLATE ──────────────────────────────────
+function downloadTemplate(){
+  const ws=XLSX.utils.aoa_to_sheet([
+    COLUMNS,
+    ["MGR001","Priya Sharma","Sales","12","2025-03-19","Training Gap","Team needs training on reporting module","Schedule 2 training sessions","Provide trainer","2025-04-01","45","Medium","New",""],
+    ["MGR002","Rahul Verma","Operations","8","2025-03-20","Login / Access","Users locked out after SSO migration","IT to reset credentials","IT support needed","2025-03-25","30","High","In Progress","Escalated to IT"]
+  ]);
+  ws["!cols"]=COLUMNS.map(()=>({wch:22}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Issues");
+  XLSX.writeFile(wb,"tool_adoption_template.xlsx");
+}
+
+// ── DATA TAB ───────────────────────────────────────────
+async function loadData(){
+  if(DATA_URL==="YOUR_POWER_AUTOMATE_DATA_URL_HERE"){
+    g("no-url-msg").style.display="block";
+    g("no-url-msg").innerHTML="<strong>⚙ Data URL not configured</strong> Create a second Power Automate flow with 'List rows' + 'Response' action and paste the URL as DATA_URL in this file.";
+    g("empty-msg").textContent="Data URL not configured.";
+    return;
+  }
+  g("empty-msg").textContent="Loading data from SharePoint...";
+  g("empty-st").style.display="block";g("tbody").innerHTML="";
+  try{
+    const res=await fetch(DATA_URL);const json=await res.json();
+    allRecords=json.value||json||[];
+    g("no-url-msg").style.display="none";
+    renderTable();updateMetrics();
+  }catch(e){g("empty-msg").textContent="Could not load data: "+e.message;}
+}
+
+function updateMetrics(){
+  const open=allRecords.filter(r=>!["Resolved","Won't Fix"].includes(r["Status"]||r.Status)).length;
+  const high=allRecords.filter(r=>["High","Critical"].includes(r["Risk Level"]||r.RiskLevel||r.Risk_Level)).length;
+  const pcts=allRecords.map(r=>parseFloat(r["Current Adoption %"]||r.CurrentAdoption||0)).filter(n=>!isNaN(n));
+  const avg=pcts.length?Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length):0;
+  g("m-total").textContent=allRecords.length;g("m-open").textContent=open;g("m-high").textContent=high;g("m-adopt").textContent=avg+"%";
+}
+
+function riskPill(v){const m={Low:"p-low",Medium:"p-medium",High:"p-high",Critical:"p-critical"};return`<span class="pill ${m[v]||'p-def'}">${v||"—"}</span>`;}
+function statusPill(v){let c="p-def";if(v==="New")c="p-new";else if(v==="In Progress")c="p-inprog";else if(v==="Resolved")c="p-resolved";else if(["Escalated to Vendor","Won't Fix"].includes(v))c="p-high";return`<span class="pill ${c}">${v||"—"}</span>`;}
+
+function renderTable(){
+  const q=g("srch").value.toLowerCase();const fs=g("fil-status").value;const fr=g("fil-risk").value;
+  const norm=r=>({sl:r["Sl. No."]||r.Sl_No||"",mgrid:r["Manager ID"]||r.ManagerID||"",mgrname:r["Manager Name"]||r.ManagerName||"",dept:r["Department"]||"",cat:r["Primary Issue Category"]||r.PrimaryIssueCategory||"",desc:r["Detailed Issue Description"]||r.DetailedIssueDescription||"",risk:r["Risk Level"]||r.RiskLevel||"",adopt:r["Current Adoption %"]||r.CurrentAdoption||"0",status:r["Status"]||"",timeline:r["Agreed Timeline for 100% Compliance"]||r.AgreedTimeline||""});
+  const filtered=allRecords.map(norm).filter(r=>{const txt=[r.mgrid,r.mgrname,r.dept,r.cat,r.desc].join(" ").toLowerCase();return(!q||txt.includes(q))&&(!fs||r.status===fs)&&(!fr||r.risk===fr);});
+  g("rec-count").textContent=filtered.length+" of "+allRecords.length+" record"+(allRecords.length!==1?"s":"");
+  g("empty-st").style.display=filtered.length===0?"block":"none";
+  if(!filtered.length){g("empty-msg").textContent="No records match your filter.";return;}
+  g("tbody").innerHTML=filtered.map((r,i)=>{const pct=Math.min(100,parseFloat(r.adopt)||0);return`<tr><td>${r.sl||i+1}</td><td><span class="mgrid">${esc(r.mgrid)}</span></td><td>${esc(r.mgrname)}</td><td>${esc(r.dept)}</td><td>${esc(r.cat)}</td><td class="dcell" title="${esc(r.desc)}">${esc(r.desc)}</td><td>${riskPill(r.risk)}</td><td><div class="abar"><div class="atrack"><div class="afill" style="width:${Math.round(pct)}%"></div></div><span class="apct">${Math.round(pct)}%</span></div></td><td>${statusPill(r.status)}</td><td style="font-size:11px;color:#888">${esc(r.timeline)}</td></tr>`;}).join("");
 }
 
 // Init
-g("f-date").value = new Date().toISOString().split("T")[0];
+g("f-date").value=new Date().toISOString().split("T")[0];
 calcProgress();
 </script>
 </body>
