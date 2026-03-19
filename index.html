@@ -337,7 +337,7 @@ async function submitForm() {
   req.forEach(id => { if (!gv(id)) { g(id).classList.add("err"); ok = false; } });
   if (!ok) { showErr("⚠ Please fill all required fields marked with *"); return; }
 
-  if (FLOW_URL === "YOUR_POWER_AUTOMATE_URL_HERE") {
+  if (FLOW_URL === "https://defaultb992331348d546f4b29467fd4b2d25.1b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c3c9d232553f4bcc96d5b8381443d11f/triggers/manual/paths/invoke?api-version=1") {
     showErr("⚠ Setup needed: paste your Power Automate URL in the script section of this file.");
     return;
   }
