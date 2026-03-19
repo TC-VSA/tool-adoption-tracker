@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tool Adoption Issue Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F4DB84;min-height:100vh;padding:36px 20px 60px}
+.page{max-width:760px;margin:0 auto}
+
+/* ── HEADER ── */
+.hdr{margin-bottom:26px}
+.hdr h1{font-size:28px;font-weight:600;color:#423404;letter-spacing:-.4px}
+.hdr p{font-size:14px;color:#6b5209;margin-top:5px}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:4px 12px;font-size:12px;color:#3B6D11;font-weight:500;margin-top:10px}
+.dot{width:7px;height:7px;background:#3B6D11;border-radius:50%;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{background:rgba(255,255,255,.4);border-radius:20px;height:6px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:6px;background:#423404;border-radius:20px;transition:width .4s ease;width:0%}
+.steps-label{display:flex;justify-content:space-between;font-size:11px;color:#6b5209;margin-bottom:6px;font-weight:500}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:16px;padding:26px 28px;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.06);transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 24px rgba(0,0,0,.09)}
+.sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#bbb;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g1{margin-bottom:14px}
+
+/* ── FIELDS ── */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:#666}
+.req{color:#e24b4a}
+input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{
+  padding:10px 13px;border-radius:9px;border:1.5px solid #e8e8e8;
+  font-size:13px;font-family:'Inter',sans-serif;
+  background:#fafafa;color:#1a1a1a;width:100%;
+  outline:none;transition:all .18s
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#F9C60E;background:#fff;
+  box-shadow:0 0 0 3px rgba(249,198,14,.2)
+}
+input.err,select.err{border-color:#e24b4a!important;box-shadow:0 0 0 3px rgba(226,75,74,.12)!important}
+textarea{resize:vertical;min-height:76px;line-height:1.55}
+select{cursor:pointer}
+
+/* ── ADOPTION SLIDER ── */
+.slider-wrap{display:flex;align-items:center;gap:10px;margin-top:2px}
+.slider-wrap input[type=range]{
+  flex:1;-webkit-appearance:none;height:5px;background:#e8e8e8;
+  border-radius:5px;outline:none;cursor:pointer
+}
+.slider-wrap input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  background:#F9C60E;border:2px solid #423404;border-radius:50%;cursor:pointer
+}
+.adopt-val{font-size:14px;font-weight:600;color:#423404;min-width:38px;text-align:right}
+
+/* ── QUICK FILL TAGS ── */
+.quick-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.qtag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;background:#f4f4f4;color:#555;border:1px solid #e8e8e8;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.qtag:hover{background:#FAEEDA;color:#854F0B;border-color:#EF9F27}
+
+/* ── ERROR BANNER ── */
+.err-bar{background:#FCEBEB;border:1px solid #e24b4a;border-radius:9px;padding:11px 15px;font-size:13px;color:#A32D2D;margin-bottom:14px;display:none;font-weight:500}
+
+/* ── SUBMIT BUTTON ── */
+.submit-wrap{margin-top:6px}
+.submit-btn{
+  width:100%;padding:15px;background:#423404;color:#F9C60E;
+  border:none;border-radius:10px;font-size:15px;font-weight:600;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .18s;letter-spacing:.01em
+}
+.submit-btn:hover:not(:disabled){background:#5a4606;transform:translateY(-1px);box-shadow:0 4px 16px rgba(66,52,4,.25)}
+.submit-btn:active:not(:disabled){transform:translateY(0)}
+.submit-btn:disabled{background:#ccc;color:#888;cursor:not-allowed;transform:none;box-shadow:none}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(249,198,14,.3);border-top-color:#F9C60E;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── SUCCESS ── */
+.success-card{display:none;background:#fff;border-radius:16px;padding:52px 28px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.success-icon{width:72px;height:72px;background:#EAF3DE;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
+.success-card h2{font-size:22px;font-weight:600;color:#3B6D11;margin-bottom:8px}
+.success-card p{font-size:14px;color:#777;line-height:1.65;margin-bottom:20px}
+.ref{display:inline-block;font-family:monospace;font-size:14px;font-weight:600;color:#423404;background:#F4DB84;padding:6px 16px;border-radius:8px;margin-bottom:24px}
+.reset-btn{background:#423404;color:#F9C60E;border:none;border-radius:9px;padding:11px 28px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s}
+.reset-btn:hover{background:#5a4606}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  body{padding:20px 14px 40px}
+  .g2,.g3{grid-template-columns:1fr}
+  .card{padding:20px 18px}
+  .hdr h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <h1>Tool adoption issue tracker</h1>
+    <p>Fill the form below — your entry saves directly to SharePoint Excel.</p>
+    <div class="live-badge">
+      <span class="dot"></span>
+      Live · Powered by Microsoft 365
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="steps-label">
+    <span id="step-label">Manager details</span>
+    <span id="step-count">Step 1 of 3</span>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
+
+  <!-- ERROR BANNER -->
+  <div class="err-bar" id="err-bar"></div>
+
+  <!-- ══ FORM ══ -->
+  <div id="form-wrap">
+
+    <!-- SECTION 1 — Manager & Team -->
+    <div class="card">
+      <div class="sec-title">1 · Manager &amp; team details</div>
+      <div class="g3">
+        <div class="field">
+          <label>Manager ID <span class="req">*</span></label>
+          <input type="text" id="f-mgrid" placeholder="e.g. MGR001" oninput="calcProgress()"/>
+        </div>
+        <div class="field">
+          <label>Manager name <span class="req">*</span></label>
+          <input type="text" id="f-mgrname" placeholder="Full name" oninput="calcProgress()"/>
+        </div>
+        <div class="field">
+          <label>Department <span class="req">*</span></label>
+          <select id="f-dept" onchange="calcProgress()">
+            <option value="">Select department</option>
+            <option>Sales</option>
+            <option>Marketing</option>
+            <option>Engineering</option>
+            <option>HR</option>
+            <option>Finance</option>
+            <option>Operations</option>
+            <option>Customer Success</option>
+            <option>Legal</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="field">
+          <label>Team size</label>
+          <input type="number" id="f-size" placeholder="e.g. 12" min="1"/>
+        </div>
+        <div class="field">
+          <label>Interaction date</label>
+          <input type="date" id="f-date"/>
+        </div>
+        <div class="field">
+          <label>Current adoption %</label>
+          <div class="slider-wrap">
+            <input type="range" id="f-adopt" min="0" max="100" value="0"
+              oninput="document.getElementById('adv').textContent=this.value+'%'"/>
+            <span class="adopt-val" id="adv">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 — Issue -->
+    <div class="card">
+      <div class="sec-title">2 · Issue details</div>
+      <div class="g2">
+        <div class="field">
+          <label>Primary issue category <span class="req">*</span></label>
+          <select id="f-cat" onchange="calcProgress()">
+            <option value="">Select category</option>
+            <option>Login / Access</option>
+            <option>Performance</option>
+            <option>Training Gap</option>
+            <option>Integration</option>
+            <option>UI/UX Confusion</option>
+            <option>Data Migration</option>
+            <option>Resistance to Change</option>
+            <option>Licensing</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Risk level</label>
+          <select id="f-risk">
+            <option value="">Select risk</option>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="g1 field">
+        <label>Detailed issue description</label>
+        <textarea id="f-desc" placeholder="Describe what happens, who is affected, when it started..."></textarea>
+        <div class="quick-tags">
+          <span class="qtag" onclick="appendDesc('Team unable to login after system update.')">Login after update</span>
+          <span class="qtag" onclick="appendDesc('Team is not aware of key features — training needed.')">Training needed</span>
+          <span class="qtag" onclick="appendDesc('System is too slow — impacting daily productivity.')">Performance issue</span>
+          <span class="qtag" onclick="appendDesc('Team is resistant to switching from the old tool.')">Resistance to change</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 — Resolution -->
+    <div class="card">
+      <div class="sec-title">3 · Resolution &amp; support</div>
+      <div class="g2">
+        <div class="field">
+          <label>Agreed way forward</label>
+          <textarea id="f-way" style="min-height:60px" placeholder="Steps agreed to resolve this..."></textarea>
+        </div>
+        <div class="field">
+          <label>Support required from TCMPL</label>
+          <textarea id="f-sup" style="min-height:60px" placeholder="What does TCMPL need to provide?"></textarea>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="field">
+          <label>Timeline for 100% compliance</label>
+          <input type="date" id="f-timeline"/>
+        </div>
+        <div class="field">
+          <label>Status <span class="req">*</span></label>
+          <select id="f-status" onchange="calcProgress()">
+            <option>New</option>
+            <option>In Review</option>
+            <option>Escalated to Vendor</option>
+            <option>In Progress</option>
+            <option>Waiting on Team</option>
+            <option>Resolved</option>
+            <option>Won't Fix</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Remarks</label>
+          <input type="text" id="f-remarks" placeholder="Any additional notes..."/>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button class="submit-btn" id="sub-btn" onclick="submitForm()">
+          Submit issue to SharePoint
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /form-wrap -->
+
+  <!-- ══ SUCCESS ══ -->
+  <div class="success-card" id="success-wrap">
+    <div class="success-icon">✓</div>
+    <h2>Issue logged successfully!</h2>
+    <p>Your entry has been saved directly to the<br/>SharePoint Excel database.</p>
+    <div class="ref" id="ref-id"></div>
+    <br/>
+    <button class="reset-btn" onclick="resetForm()">Submit another issue</button>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ════════════════════════════════════════════════════════
+//  PASTE YOUR POWER AUTOMATE HTTP TRIGGER URL BELOW
+//  How to get it:
+//  1. Go to flow.microsoft.com
+//  2. Open your flow → "When an HTTP request is received"
+//  3. Copy the "HTTP POST URL"
+//  4. Replace the placeholder text below with that URL
+// ════════════════════════════════════════════════════════
+const FLOW_URL = "https://defaultb992331348d546f4b29467fd4b2d25.1b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c3c9d232553f4bcc96d5b8381443d11f/triggers/manual/paths/invoke?api-version=1";
+// ════════════════════════════════════════════════════════
+
+const g  = id => document.getElementById(id);
+const gv = id => (g(id).value || "").trim();
+
+// ── Progress bar ──────────────────────────────────────
+function calcProgress() {
+  const fields = ["f-mgrid","f-mgrname","f-dept","f-cat"];
+  const filled = fields.filter(id => gv(id) !== "").length;
+  const pct = Math.round((filled / fields.length) * 100);
+  g("prog").style.width = pct + "%";
+  const labels = ["Manager details","Issue details","Resolution"];
+  const idx = filled < 3 ? 0 : filled < 4 ? 1 : 2;
+  g("step-label").textContent = labels[idx];
+  g("step-count").textContent = "Step " + (idx+1) + " of 3";
+}
+
+// ── Quick fill description ────────────────────────────
+function appendDesc(text) {
+  const el = g("f-desc");
+  el.value = el.value ? el.value + " " + text : text;
+  el.focus();
+}
+
+// ── Generate reference ID ─────────────────────────────
+function genRef() {
+  const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let r = "TAI-";
+  for (let i=0;i<6;i++) r += c[Math.floor(Math.random()*c.length)];
+  return r;
+}
+
+// ── Show error ────────────────────────────────────────
+function showErr(msg) {
+  const b = g("err-bar");
+  b.textContent = msg; b.style.display = "block";
+  b.scrollIntoView({ behavior:"smooth", block:"center" });
+  setTimeout(() => b.style.display = "none", 6000);
+}
+
+// ── Submit ────────────────────────────────────────────
+async function submitForm() {
+  // Clear errors
+  ["f-mgrid","f-mgrname","f-dept","f-cat"].forEach(id => g(id).classList.remove("err"));
+
+  // Validate
+  const req = ["f-mgrid","f-mgrname","f-dept","f-cat"];
+  let ok = true;
+  req.forEach(id => { if (!gv(id)) { g(id).classList.add("err"); ok = false; } });
+  if (!ok) { showErr("⚠ Please fill all required fields marked with *"); return; }
+
+  if (FLOW_URL === "YOUR_POWER_AUTOMATE_URL_HERE") {
+    showErr("⚠ Setup needed: paste your Power Automate URL in the script section of this file.");
+    return;
+  }
+
+  const btn = g("sub-btn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Saving to SharePoint...';
+
+  const payload = {
+    "Manager ID":                           gv("f-mgrid"),
+    "Manager Name":                         gv("f-mgrname"),
+    "Department":                           gv("f-dept"),
+    "Team Size":                            gv("f-size"),
+    "Interaction Date":                     gv("f-date"),
+    "Primary Issue Category":               gv("f-cat"),
+    "Detailed Issue Description":           gv("f-desc"),
+    "Agreed Way Forward":                   gv("f-way"),
+    "Support Required from TCMPL":          gv("f-sup"),
+    "Agreed Timeline for 100% Compliance":  gv("f-timeline"),
+    "Current Adoption %":                   g("f-adopt").value,
+    "Risk Level":                           gv("f-risk"),
+    "Status":                               gv("f-status"),
+    "Remarks":                              gv("f-remarks"),
+    "Submitted At":                         new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(FLOW_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok || res.status === 202) {
+      g("ref-id").textContent = "Reference ID: " + genRef();
+      g("form-wrap").style.display  = "none";
+      g("success-wrap").style.display = "block";
+      g("prog").style.width = "100%";
+      window.scrollTo({ top:0, behavior:"smooth" });
+    } else {
+      throw new Error("Status " + res.status);
+    }
+  } catch(e) {
+    showErr("❌ Submission failed: " + e.message + ". Please try again or contact your admin.");
+    btn.disabled = false;
+    btn.textContent = "Submit issue to SharePoint";
+  }
+}
+
+// ── Reset ─────────────────────────────────────────────
+function resetForm() {
+  ["f-mgrid","f-mgrname","f-size","f-desc","f-way","f-sup","f-remarks","f-timeline"]
+    .forEach(id => g(id).value = "");
+  ["f-dept","f-cat","f-risk"].forEach(id => g(id).value = "");
+  g("f-date").value    = new Date().toISOString().split("T")[0];
+  g("f-adopt").value   = "0";
+  g("adv").textContent = "0%";
+  g("f-status").value  = "New";
+  g("sub-btn").disabled = false;
+  g("sub-btn").textContent = "Submit issue to SharePoint";
+  g("form-wrap").style.display  = "block";
+  g("success-wrap").style.display = "none";
+  calcProgress();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+// Init
+g("f-date").value = new Date().toISOString().split("T")[0];
+calcProgress();
+</script>
+</body>
+</html>
